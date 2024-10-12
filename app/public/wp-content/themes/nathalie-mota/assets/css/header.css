@@ -109,9 +109,6 @@
 }
 
 
-
-
-
 /* mobiles */
 @media (max-width: 575px) {
 
@@ -173,3 +170,15 @@
     }
 }
 
+@media (max-width: 300px){
+    .site-title{
+        font-size: 1.5em;
+    }
+    .main-navigation.active {
+        padding-top: 40px;
+      }
+    .nav-menu li a {
+        font-size: 25px !important;
+    }
+
+}
