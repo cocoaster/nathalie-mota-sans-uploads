@@ -2,8 +2,8 @@
 /**
  * Nathalie Mota Theme Functions
  * 
- * Ce fichier gère les configurations du thème, l'enregistrement des scripts, 
- * des menus et l'inclusion des fichiers essentiels.
+ * Ce fichier gère les configurations de base du thème, l'enregistrement des scripts, 
+ * les menus et l'inclusion des fichiers essentiels pour des fonctionnalités avancées.
  */
 
 // 1. Initialisation du thème : ajout des supports de base
@@ -24,7 +24,7 @@ add_action('after_setup_theme', 'nathalie_mota_setup');
 
 // 2. Enregistrement des scripts et styles CSS/JS
 function nathalie_mota_enqueue_scripts() {
-    // Enregistrement des styles
+    // Liste des styles CSS à charger
     $styles = [
         'normalize-css' => '/assets/css/normalize.css',
         'main-css' => '/assets/css/styles.css',
@@ -48,9 +48,9 @@ function nathalie_mota_enqueue_scripts() {
         wp_enqueue_style($handle, $url);
     }
 
-    // Enregistrement des scripts
+    // Charge jQuery par défaut pour les scripts du thème
     wp_enqueue_script('jquery'); // Script jQuery de WordPress
-
+    // Liste des scripts JavaScript à charger
     $scripts = [
         'custom-js' => '/assets/js/custom.js',
         'header-js' => '/assets/js/header.js',
@@ -109,6 +109,7 @@ add_filter('upload_mimes', 'add_svg_to_upload_mimes');
 // 5. Rendre le troisième élément de menu non cliquable
 function make_third_menu_item_non_clickable($items, $args) {
     if ($args->theme_location == 'footer-menu') {
+
         $count = 0; // Initialiser le compteur d'éléments de menu
 
         foreach ($items as $item) {
@@ -128,7 +129,7 @@ function make_third_menu_item_non_clickable($items, $args) {
 add_filter('wp_nav_menu_objects', 'make_third_menu_item_non_clickable', 10, 2);
 
 
-// Supprimer la catégorie "Uncategorized" et exclure la catégorie "General" des sélecteurs personnalisés
+// 6. Suppression de la catégorie "Uncategorized" par défaut et exclusion des catégories spécifiques
 function remove_uncategorized_category() {
     $uncategorized_id = get_cat_ID('Uncategorized');
     if ($uncategorized_id) {
@@ -137,7 +138,7 @@ function remove_uncategorized_category() {
 }
 add_action('init', 'remove_uncategorized_category');
 
-// Exclure "Uncategorized" et "General" des sélecteurs personnalisés
+// 7. Exclusion des catégories "Uncategorized" et "General" des sélecteurs de catégories
 function exclude_uncategorized_and_general_term($terms, $taxonomies, $args) {
     if (!is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
         foreach ($terms as $key => $term) {
@@ -150,7 +151,7 @@ function exclude_uncategorized_and_general_term($terms, $taxonomies, $args) {
 }
 add_filter('get_terms', 'exclude_uncategorized_and_general_term', 10, 3);
 
-// 9. Activer la suppression des termes de taxonomie dans les Custom Post Types
+// 8. Activer la suppression des termes de taxonomie dans les Custom Post Types
 function allow_term_deletion() {
     global $wp_taxonomies;
     foreach ($wp_taxonomies as $taxonomy => $object) {
@@ -161,6 +162,7 @@ function allow_term_deletion() {
 }
 add_action('init', 'allow_term_deletion');
 
+// 9. Récupération des photos triées par date de prise de vue
 function get_all_photos_sorted_by_date() {
     global $wpdb;
 
@@ -176,7 +178,7 @@ function get_all_photos_sorted_by_date() {
     return $wpdb->get_results($query);
 }
 
-// Obtenir l'index de la photo actuelle
+// 10. Récupérer l'index de la photo actuelle dans un ensemble de photos triées
 function get_current_photo_index($current_post_id, $photos) {
     foreach ($photos as $index => $photo) {
         if ($photo->ID == $current_post_id) {
@@ -186,7 +188,7 @@ function get_current_photo_index($current_post_id, $photos) {
     return -1; // Indice non trouvé
 }
 
-// Formulaire de contact
+// 11. Gestion de l'envoi du formulaire de contact via AJAX
 function submit_contact_form() {
     // Vérifier les permissions
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'submit_contact_form_nonce')) {
@@ -206,14 +208,14 @@ function submit_contact_form() {
     error_log('Photo Reference: ' . $photo_reference);
     error_log('Message: ' . $message);
 
-    // Valider les données
+    // Vérification de la présence des champs obligatoires
     if (empty($name) || empty($email) || empty($message)) {
         error_log('Missing required fields.');http://nathaliemota.local/wp-admin/plugins.php
         wp_send_json_error(array('message' => 'Veuillez remplir tous les champs obligatoires.'));
         return;
     }
 
-    // Valider la référence de la photo si elle est fournie
+    // Validation de la référence photo si fournie
     if (!empty($photo_reference)) {
         $photo_query = new WP_Query(array(
             'post_type' => 'photo',
@@ -233,7 +235,7 @@ function submit_contact_form() {
         }
     }
 
-    // Envoyer un e-mail à l'administrateur
+    // Envoi d'un email au destinataire administrateur et confirmation à l'utilisateur
     $to_admin = get_option('admin_email');
     $subject_admin = sprintf(__('Nouveau message de %s', 'nathalie-mota'), $name);
     $body_admin = sprintf(__('Nom: %s\nEmail: %s\nRéférence Photo: %s\nMessage: %s', 'nathalie-mota'), $name, $email, $photo_reference, $message);
@@ -241,7 +243,7 @@ function submit_contact_form() {
 
     $admin_email_sent = wp_mail($to_admin, $subject_admin, $body_admin, $headers);
 
-    // Envoyer un e-mail de confirmation à l'utilisateur
+    // Notification de confirmation d'envoi à l'utilisateur
     $to_user = $email;
     $subject_user = __('Confirmation de réception de votre message', 'nathalie-mota');
     $body_user = sprintf(
