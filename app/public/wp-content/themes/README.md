@@ -42,12 +42,12 @@ Ce dossier contient tous les fichiers multimédias du thème, classés par type 
 - **css/** : Dossier des fichiers CSS pour la mise en forme et l'apparence.
   - **404.css** : Styles pour la page 404.
   - **animations.css** : Animations globales.
-  - **contact.css** : Styles pour le formulaire de contact.
+  - **contact.css** : Styles pour la modale de contact.
   - **filters.css** : Styles pour les filtres de photos.
   - **footer.css** : Styles pour le pied de page.
-  - **front-page.css** : Styles pour la page d'accueil.
+  - **front-page.css** : Styles pour le hero de la page d'accueil.
   - **gallery.css** : Styles pour la galerie de photos.
-  - **header.css** : Styles pour l'en-tête.
+  - **header.css** : Styles pour le menu de l'en-tête.
   - **lightbox.css** : Styles pour la lightbox.
   - **normalize.css** : Réinitialisation des styles.
   - **single-photo.css** : Styles pour l'affichage des photos individuelles.
