@@ -96,9 +96,6 @@ function render_photo_html($photos) {
     wp_reset_postdata();
 }
 
-
-
-
 // 4. Fonction pour permettre l'upload de fichiers SVG
 function add_svg_to_upload_mimes($mimes) {
     $mimes['svg'] = 'image/svg+xml';
@@ -129,38 +126,6 @@ function make_third_menu_item_non_clickable($items, $args) {
 add_filter('wp_nav_menu_objects', 'make_third_menu_item_non_clickable', 10, 2);
 
 
-// 6. Suppression de la catégorie "Uncategorized" par défaut et exclusion des catégories spécifiques
-function remove_uncategorized_category() {
-    $uncategorized_id = get_cat_ID('Uncategorized');
-    if ($uncategorized_id) {
-        wp_delete_term($uncategorized_id, 'category');
-    }
-}
-add_action('init', 'remove_uncategorized_category');
-
-// 7. Exclusion des catégories "Uncategorized" et "General" des sélecteurs de catégories
-function exclude_uncategorized_and_general_term($terms, $taxonomies, $args) {
-    if (!is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
-        foreach ($terms as $key => $term) {
-            if (is_object($term) && ($term->slug == 'uncategorized' || $term->slug == 'general')) {
-                unset($terms[$key]);
-            }
-        }
-    }
-    return $terms;
-}
-add_filter('get_terms', 'exclude_uncategorized_and_general_term', 10, 3);
-
-// 8. Activer la suppression des termes de taxonomie dans les Custom Post Types
-function allow_term_deletion() {
-    global $wp_taxonomies;
-    foreach ($wp_taxonomies as $taxonomy => $object) {
-        if (in_array('photo', $object->object_type)) {
-            $wp_taxonomies[$taxonomy]->public = true;
-        }
-    }
-}
-add_action('init', 'allow_term_deletion');
 
 // 9. Récupération des photos triées par date de prise de vue
 function get_all_photos_sorted_by_date() {
@@ -188,79 +153,6 @@ function get_current_photo_index($current_post_id, $photos) {
     return -1; // Indice non trouvé
 }
 
-// 11. Gestion de l'envoi du formulaire de contact via AJAX
-function submit_contact_form() {
-    // Vérifier les permissions
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'submit_contact_form_nonce')) {
-        error_log('Nonce verification failed.');
-        wp_send_json_error(array('message' => 'Nonce verification failed.'));
-        return;
-    }
 
-    // Récupérer les données du formulaire
-    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-    $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
-    $photo_reference = isset($_POST['photo_reference']) ? sanitize_text_field($_POST['photo_reference']) : '';
-    $message = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
-
-    error_log('Name: ' . $name);
-    error_log('Email: ' . $email);
-    error_log('Photo Reference: ' . $photo_reference);
-    error_log('Message: ' . $message);
-
-    // Vérification de la présence des champs obligatoires
-    if (empty($name) || empty($email) || empty($message)) {
-        error_log('Missing required fields.');http://nathaliemota.local/wp-admin/plugins.php
-        wp_send_json_error(array('message' => 'Veuillez remplir tous les champs obligatoires.'));
-        return;
-    }
-
-    // Validation de la référence photo si fournie
-    if (!empty($photo_reference)) {
-        $photo_query = new WP_Query(array(
-            'post_type' => 'photo',
-            'meta_query' => array(
-                array(
-                    'key' => '_photo_reference',
-                    'value' => $photo_reference,
-                    'compare' => '='
-                )
-            )
-        ));
-
-        if (!$photo_query->have_posts()) {
-            error_log('Invalid photo reference.');
-            wp_send_json_error(array('message' => 'La référence de la photo est invalide.'));
-            return;
-        }
-    }
-
-    // Envoi d'un email au destinataire administrateur et confirmation à l'utilisateur
-    $to_admin = get_option('admin_email');
-    $subject_admin = sprintf(__('Nouveau message de %s', 'nathalie-mota'), $name);
-    $body_admin = sprintf(__('Nom: %s\nEmail: %s\nRéférence Photo: %s\nMessage: %s', 'nathalie-mota'), $name, $email, $photo_reference, $message);
-    $headers = array('Content-Type: text/plain; charset=UTF-8');
-
-    $admin_email_sent = wp_mail($to_admin, $subject_admin, $body_admin, $headers);
-
-    // Notification de confirmation d'envoi à l'utilisateur
-    $to_user = $email;
-    $subject_user = __('Confirmation de réception de votre message', 'nathalie-mota');
-    $body_user = sprintf(
-        __('Bonjour %s,\n\nMerci pour votre message. Nous avons bien reçu votre demande et nous vous recontacterons sous peu.\n\nCordialement,\nNathalie Mota.', 'nathalie-mota'),
-        $name
-    );
-    $user_email_sent = wp_mail($to_user, $subject_user, $body_user, $headers);
-
-    if ($admin_email_sent && $user_email_sent) {
-        error_log('Emails sent successfully.');
-        wp_send_json_success(array('message' => __('Votre message a bien été envoyé. Vous allez recevoir un e-mail de confirmation.', 'nathalie-mota')));
-    } else {
-        error_log('Failed to send email.');
-        wp_send_json_error(array('message' => __('Une erreur est survenue lors de l\'envoi de votre message.', 'nathalie-mota')));
-    }
-}
-add_action('wp_ajax_submit_contact_form', 'submit_contact_form');
-add_action('wp_ajax_nopriv_submit_contact_form', 'submit_contact_form');
 
 ?>

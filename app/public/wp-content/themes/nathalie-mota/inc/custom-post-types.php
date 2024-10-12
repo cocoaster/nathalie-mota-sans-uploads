@@ -148,6 +148,7 @@ function render_format_management_page() {
     <?php
 }
 
+// Fonctions de gestion des catégories et taxonomies personnalisées
 // Page d'options pour gérer les termes personnalisés
 function add_taxonomy_management_page() {
     add_menu_page(
@@ -196,3 +197,37 @@ function render_taxonomy_management_page() {
     </div>
     <?php
 }
+
+
+// 6. Suppression de la catégorie "Uncategorized" par défaut et exclusion des catégories spécifiques
+function remove_uncategorized_category() {
+    $uncategorized_id = get_cat_ID('Uncategorized');
+    if ($uncategorized_id) {
+        wp_delete_term($uncategorized_id, 'category');
+    }
+}
+add_action('init', 'remove_uncategorized_category');
+
+// 7. Exclusion des catégories "Uncategorized" et "General" des sélecteurs de catégories
+function exclude_uncategorized_and_general_term($terms, $taxonomies, $args) {
+    if (!is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
+        foreach ($terms as $key => $term) {
+            if (is_object($term) && ($term->slug == 'uncategorized' || $term->slug == 'general')) {
+                unset($terms[$key]);
+            }
+        }
+    }
+    return $terms;
+}
+add_filter('get_terms', 'exclude_uncategorized_and_general_term', 10, 3);
+
+// 8. Activer la suppression des termes de taxonomie dans les Custom Post Types
+function allow_term_deletion() {
+    global $wp_taxonomies;
+    foreach ($wp_taxonomies as $taxonomy => $object) {
+        if (in_array('photo', $object->object_type)) {
+            $wp_taxonomies[$taxonomy]->public = true;
+        }
+    }
+}
+add_action('init', 'allow_term_deletion');
