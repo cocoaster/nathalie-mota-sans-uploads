@@ -1,0 +1,82 @@
+@import url('normalize.css');
+@import url('lightbox.css');
+@import url('header.css');
+@import url('footer.css');
+@import url('front-page.css');
+@import url('gallery.css');
+@import url('filters.css');
+@import url('single-photo.css');
+@import url('animations.css');
+@import url('contact.css');
+
+@import url('404.css');
+
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/SpaceMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: url('../fonts/SpaceMono-Bold.ttf') format('truetype');
+}
+
+:root {
+    --primary-color: #E00000;
+}
+
+
+*, html, body{
+    margin: 0;
+}
+body {
+    font-family: 'Space Mono', monospace;
+    margin-top: 0;
+}
+
+/* Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.container{
+    width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Application de la police aux éléments de menu */
+.nav-menu li a,
+.footer-menu li a {
+    font-family: 'Space Mono', monospace;
+}
+
+/* Application de la police au nom du site */
+.site-title,
+.site-description {
+    font-family: 'Space Mono', monospace;
+}
+
+/* Styliser le conteneur principal */
+#main-content {
+    padding: 20px;
+    padding-top: 0;
+    margin: 0 auto; 
+}
+
+i{
+    color: white !important;
+}
+
+
+/* mobiles */
+@media (max-width: 575px) {
+    html, body{
+        width: 100%;
+        overflow-x: hidden;
+    }
+}

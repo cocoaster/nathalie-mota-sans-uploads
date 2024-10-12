@@ -1,0 +1,94 @@
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+        filter: blur(5px);
+    }
+    100% {
+        transform: scale(4);
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+
+
+
+
+.photo-thumbnail {
+    opacity: 0;
+    animation: fadeInScale 1s ease-in-out 0.8s forwards;
+}
+
+.photo-fields-info p:nth-child(odd) {
+    animation: slideInLeft 1s ease-in-out 1s backwards;
+}
+
+.photo-fields-info p:nth-child(even) {
+    animation: slideInRight 1s ease-in-out 1s backwards;
+}
+
+.related-photos .photo-item {
+    opacity: 0;
+    animation: slideUp 1s ease-in-out 0.2s forwards;
+}
+
+#photo-list .photo-item {
+    opacity: 0; 
+    animation: slideUp 0.6s ease-out forwards; 
+    animation-delay: calc(0.1s * var(--animation-order));
+}
+
+#load-more:hover::before {
+    opacity: 1;
+    animation: ripple 1s ease-out forwards;
+}
+
+.contact-link a:hover::before {
+    opacity: 1;
+    animation: ripple 1s ease-out forwards;
+}

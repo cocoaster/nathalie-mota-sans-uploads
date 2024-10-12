@@ -1,0 +1,175 @@
+/* Styles for the navigation bar */
+.site-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 0;
+}
+
+.site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo .site-title a {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-size: 24px;
+    letter-spacing: 4px;
+    font-weight: bold;
+}
+
+.main-navigation .nav-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-end; 
+}
+
+.main-navigation .nav-menu li {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.main-navigation .nav-menu li a {
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.main-navigation .nav-menu li a:hover {
+    color: var(--primary-color);
+}
+
+.nav-menu li a {
+    padding: 10px; 
+}
+
+
+.site-title a {
+    text-transform: uppercase; 
+}
+
+#menu-header-menu{
+    letter-spacing: 2px;
+}
+
+/* Styles pour le menu hamburger */
+.hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.hamburger-icon {
+    width: 30px;
+    height: 2px;
+    background-color: #333;
+    position: relative;
+    display: block;
+    transition: all 0.3s ease-in-out;
+}
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: "";
+    width: 30px;
+    height: 2px;
+    background-color: #333;
+    position: absolute;
+    left: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.hamburger-icon::before {
+    top: -8px;
+}
+
+.hamburger-icon::after {
+    top: 8px;
+}
+
+/* Transform to cross */
+.hamburger-icon.open {
+    background-color: transparent;
+}
+
+.hamburger-icon.open::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.hamburger-icon.open::after {
+    transform: rotate(-45deg);
+    top: 0;
+}
+
+
+
+
+
+/* mobiles */
+@media (max-width: 575px) {
+
+    .hamburger {
+        display: block;
+        z-index: 20;
+        margin-bottom: 0 !important;
+    }
+
+    .main-navigation {
+        display: none;
+        flex-direction: column;
+        color: #FFFFFF;
+        position: absolute;
+        top: 80px;
+        z-index: 10;
+        left: 0;
+        width: 100%;
+        background: var(--primary-color);
+        overflow-y: hidden;
+        
+    }
+
+    .main-navigation.active {
+        display: flex;
+        padding-top: 200px;
+        padding-bottom: 200px;
+        overflow-y: hidden;
+        height: 100vh;
+    }
+
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        padding-top: 100px;
+        padding-bottom: 200px;
+        
+    }
+
+    .nav-menu li {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        color: #FFFFFF;
+    }
+
+    .nav-menu li a {
+        padding-bottom: 30px;
+        padding-top: 30px;
+        display: block;
+        padding: 15px 0;
+        color: #FFFFFF !important;
+        font-weight: 200 !important;
+        font-size: 44px !important;
+    }
+
+    .logo .site-title a {
+        font-size: 20px;
+    }
+}
+
