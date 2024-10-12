@@ -1,0 +1,27 @@
+# Ignorer l'installation WordPress de base
+/wp-admin/
+/wp-includes/
+/wp-config.php
+/readme.html
+/license.txt
+
+# Ignorer les sauvegardes et fichiers temporaires
+*.sql
+*.tar.gz
+*.zip
+*.wpress
+*.log
+
+# Ignorer certains fichiers dans wp-content
+wp-content/ai1wm-backups/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/uploads/*.zip
+wp-content/uploads/*.wpress
+
+# Inclure uniquement les thèmes et plugins, et les téléchargements
+!wp-content/plugins/
+!wp-content/themes/
+!wp-content/uploads/
+# Ignore backup files
+app/public/wp-content/ai1wm-backups/
