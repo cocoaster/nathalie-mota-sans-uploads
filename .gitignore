@@ -1,7 +1,7 @@
 # Ignorer l'installation WordPress de base
-/wp-admin/
-/wp-includes/
-/wp-config.php
+app/public/wp-admin/
+app/public/wp-includes/
+app/public/wp-config.php
 /readme.html
 /license.txt
 
