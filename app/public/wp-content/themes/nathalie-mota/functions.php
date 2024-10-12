@@ -1,5 +1,12 @@
 <?php
-// Configuration de base du thème : ajout du support pour le titre et les images, enregistrement des menus
+/**
+ * Nathalie Mota Theme Functions
+ * 
+ * Ce fichier gère les configurations du thème, l'enregistrement des scripts, 
+ * des menus et l'inclusion des fichiers essentiels.
+ */
+
+// 1. Initialisation du thème : ajout des supports de base
 function nathalie_mota_setup() {
     // Ajoute le support pour le titre dynamique dans l'onglet du navigateur
     add_theme_support('title-tag');
@@ -15,7 +22,7 @@ function nathalie_mota_setup() {
 }
 add_action('after_setup_theme', 'nathalie_mota_setup');
 
-// Enregistrement des scripts et styles
+// 2. Enregistrement des scripts et styles CSS/JS
 function nathalie_mota_enqueue_scripts() {
     // Enregistrement des styles
     $styles = [
@@ -67,82 +74,20 @@ function nathalie_mota_enqueue_scripts() {
 add_action('wp_enqueue_scripts', 'nathalie_mota_enqueue_scripts');
 
 
-// Enregistrement du Custom Post Type pour les Photos et les taxonomies personnalisées
-function nathalie_mota_custom_post_types() {
-    register_post_type('photo', array(
-        'label' => __('Photos', 'nathalie-mota'),
-        'public' => true,
-        'supports' => array('title', 'editor', 'thumbnail', 'custom-fields', 'excerpt'),
-        'taxonomies' => array('category', 'post_tag', 'format'),
-        'rewrite' => array('slug' => 'photos'),
-        'show_in_rest' => false, // Désactiver Gutenberg
-        'labels' => array(
-            'name' => __('Photos', 'nathalie-mota'),
-            'singular_name' => __('Photo', 'nathalie-mota'),
-            'add_new' => __('Ajouter Nouvelle', 'nathalie-mota'),
-            'add_new_item' => __('Ajouter Nouvelle Photo', 'nathalie-mota'),
-            'edit_item' => __('Modifier Photo', 'nathalie-mota'),
-            'new_item' => __('Nouvelle Photo', 'nathalie-mota'),
-            'view_item' => __('Voir Photo', 'nathalie-mota'),
-            'search_items' => __('Rechercher Photos', 'nathalie-mota'),
-            'not_found' => __('Pas de Photos trouvées', 'nathalie-mota'),
-            'not_found_in_trash' => __('Pas de Photos dans la corbeille', 'nathalie-mota'),
-            'all_items' => __('Toutes les Photos', 'nathalie-mota'),
-            'archives' => __('Archives des Photos', 'nathalie-mota'),
-        ),
-    ));
+ foreach ($styles as $handle => $src) {
+        // // Vérifie si l'URL du style commence par 'http'
+        $url = strpos($src, 'http') === 0 ? $src : get_template_directory_uri() . $src;
+        // Charge le style en utilisant le nom d'identifiant unique et l'URL calculée
+        wp_enqueue_style($handle, $url);
+    }
 
-    register_taxonomy('format', 'photo', array(
-        'label' => __('Formats', 'nathalie-mota'),
-        'rewrite' => array('slug' => 'formats'),
-        'hierarchical' => true,
-    ));
-}
-add_action('init', 'nathalie_mota_custom_post_types');
 
-// Désactiver Gutenberg pour le Custom Post Type 'photo'
-function nathalie_mota_disable_gutenberg($current_status, $post_type) {
-    if ($post_type === 'photo') return false;
-    return $current_status;
-}
-add_filter('use_block_editor_for_post_type', 'nathalie_mota_disable_gutenberg', 10, 2);
 
-// Ajouter une métabox pour les détails de la photo
-function add_custom_meta_boxes() {
-    add_meta_box(
-        'photo_details',
-        __('Photo Details', 'nathalie-mota'),
-        'render_photo_details_meta_box',
-        'photo',
-        'side',
-        'default'
-    );
-}
-add_action('add_meta_boxes', 'add_custom_meta_boxes');
+// 3. Inclusion des fichiers additionnels
+require_once get_template_directory() . '/inc/custom-post-types.php';  // Gestion des Custom Post Types
+require_once get_template_directory() . '/inc/ajax-handlers.php';      // Gestion des requêtes AJAX
+require_once get_template_directory() . '/inc/hero-customizer.php';        // Personnalisation de la section Hero
 
-// Affiche les champs personnalisés pour saisir la date de prise de vue, la référence et le type de la photo.
-function render_photo_details_meta_box($post) {
-    wp_nonce_field('save_photo_details', 'photo_details_nonce');
-    $date = get_post_meta($post->ID, '_photo_date', true);
-    $reference = get_post_meta($post->ID, '_photo_reference', true);
-    $type = get_post_meta($post->ID, '_photo_type', true); // Ajouter le champ personnalisé "type"
-    ?>
-    <p>
-        <label for="photo_date"><?php _e('Date de Prise de Vue', 'nathalie-mota'); ?></label>
-        <input type="date" id="photo_date" name="photo_date" value="<?php echo esc_attr($date); ?>" />
-    </p>
-    <p>
-        <label for="photo_reference"><?php _e('Référence Photo', 'nathalie-mota'); ?></label>
-        <input type="text" id="photo_reference" name="photo_reference" value="<?php echo esc_attr($reference); ?>" />
-    </p>
-    <p>
-        <label for="photo_type"><?php _e('Type', 'nathalie-mota'); ?></label>
-        <input type="text" id="photo_type" name="photo_type" value="<?php echo esc_attr($type); ?>" />
-    </p>
-    <?php
-}
-
-// Fonction pour afficher les photos
 function render_photo_html($photos) {
     while ($photos->have_posts()) : $photos->the_post();
         get_template_part('template-parts/photo-item');
@@ -151,199 +96,37 @@ function render_photo_html($photos) {
     wp_reset_postdata();
 }
 
-// Sauvegarde des métadonnées associées aux "photos"
-function save_photo_details($post_id) {
-    if (!isset($_POST['photo_details_nonce']) || !wp_verify_nonce($_POST['photo_details_nonce'], 'save_photo_details')) {
-        return;
-    }
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-        return;
-    }
-    if (!current_user_can('edit_post', $post_id)) {
-        return;
-    }
-    if (isset($_POST['photo_date'])) {
-        update_post_meta($post_id, '_photo_date', sanitize_text_field($_POST['photo_date']));
-    }
-    if (isset($_POST['photo_reference'])) {
-        update_post_meta($post_id, '_photo_reference', sanitize_text_field($_POST['photo_reference']));
-    }
-    if (isset($_POST['photo_type'])) { // Sauvegarder le champ personnalisé "type"
-        update_post_meta($post_id, '_photo_type', sanitize_text_field($_POST['photo_type']));
-    }
+
+
+
+// 4. Fonction pour permettre l'upload de fichiers SVG
+function add_svg_to_upload_mimes($mimes) {
+    $mimes['svg'] = 'image/svg+xml';
+    return $mimes;
 }
+add_filter('upload_mimes', 'add_svg_to_upload_mimes');
 
-add_action('save_post', 'save_photo_details');
+// 5. Rendre le troisième élément de menu non cliquable
+function make_third_menu_item_non_clickable($items, $args) {
+    if ($args->theme_location == 'footer-menu') {
+        $count = 0; // Initialiser le compteur d'éléments de menu
 
-// Enregistrement des scripts AJAX pour les filtres et la pagination
-function nathalie_mota_ajax_scripts() {
-    wp_localize_script('custom-js', 'nathalie_mota_ajax', array(
-        'url' => admin_url('admin-ajax.php')
-    ));
-}
-add_action('wp_enqueue_scripts', 'nathalie_mota_ajax_scripts');
+        foreach ($items as $item) {
+            $count++;
 
-// Fonction pour filtrer les photos via AJAX
-function filter_photos() {
-    try {
-        // Récupère les données envoyées par AJAX pour la catégorie, le format et l'ordre de tri
-        $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
-        $format = isset($_POST['format']) ? sanitize_text_field($_POST['format']) : '';
-        $order = isset($_POST['order']) ? sanitize_text_field($_POST['order']) : 'DESC';
-
-        // Définition des arguments pour la requête WP_Query afin de récupérer les photos selon les critères
-        $args = array(
-            'post_type' => 'photo',
-            'posts_per_page' => 8,
-            'orderby' => 'date',
-            'order' => $order,
-            // Filtrage selon les taxonomies "category" et "format"
-            'tax_query' => array(
-                'relation' => 'AND',
-            ),
-        );
-        // Ajoute le filtre par catégorie si spécifié
-        if ($category && $category != 'all') {
-            $args['tax_query'][] = array(
-                'taxonomy' => 'category',
-                'field' => 'slug',
-                'terms' => $category,
-            );
+            // Cibler le troisième élément
+            if ($count === 3) {
+                // Retirer le lien et ajouter une classe spécifique
+                $item->url = '#'; 
+                $item->classes[] = 'non-clickable';
+            }
         }
-        // Ajoute le filtre par format si spécifié
-        if ($format && $format != 'all') {
-            $args['tax_query'][] = array(
-                'taxonomy' => 'format',
-                'field' => 'slug',
-                'terms' => $format,
-            );
-        }
-
-        // Exécute la requête WP_Query avec les arguments définis
-        $photos = new WP_Query($args);
-        $total_photos = $photos->found_posts; // Nombre total de photos disponibles
-        
-        // Capture le contenu HTML généré par render_photo_html()
-        ob_start();
-        render_photo_html($photos);
-        $html = ob_get_clean();
-
-         // Retourne la réponse en JSON contenant le HTML des photos et le nombre total
-        echo json_encode(array(
-            'html' => $html,
-            'total' => $total_photos, // Retourner le nombre total
-        ));
-    } catch (Exception $e) {
-        echo json_encode(array(
-            'error' => $e->getMessage(),
-        ));
     }
 
-    wp_die();
+    return $items;
 }
-add_action('wp_ajax_filter_photos', 'filter_photos');
-add_action('wp_ajax_nopriv_filter_photos', 'filter_photos');
+add_filter('wp_nav_menu_objects', 'make_third_menu_item_non_clickable', 10, 2);
 
-// Charger plus de photos via AJAX
-function load_more_photos() {
-    $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
-    $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
-    $format = isset($_POST['format']) ? sanitize_text_field($_POST['format']) : '';
-    $order = isset($_POST['order']) ? sanitize_text_field($_POST['order']) : 'DESC';
-
-    $args = array(
-        'post_type' => 'photo',
-        'posts_per_page' => 8,
-        'offset' => $offset,
-        'orderby' => 'date',
-        'order' => $order,
-        'tax_query' => array(
-            'relation' => 'AND',
-        ),
-    );
-
-    if ($category && $category != 'all') {
-        $args['tax_query'][] = array(
-            'taxonomy' => 'category',
-            'field' => 'slug',
-            'terms' => $category,
-        );
-    }
-
-    if ($format && $format != 'all') {
-        $args['tax_query'][] = array(
-            'taxonomy' => 'format',
-            'field' => 'slug',
-            'terms' => $format,
-        );
-    }
-
-    $photos = new WP_Query($args);
-    $loaded_photos = $photos->post_count; // Nombre de photos chargées
-
-    ob_start();
-    render_photo_html($photos);
-    $html = ob_get_clean();
-
-    echo json_encode(array(
-        'html' => $html,
-        'loaded' => $loaded_photos,
-    ));
-
-    wp_die();
-}
-
-add_action('wp_ajax_load_more_photos', 'load_more_photos');
-add_action('wp_ajax_nopriv_load_more_photos', 'load_more_photos');
-
-
-
-// Page de gestion des formats personnalisés
-function add_format_management_page() {
-    add_menu_page(
-        __('Gestion des Formats', 'nathalie-mota'),
-        __('Gestion des Formats', 'nathalie-mota'),
-        'manage_options',
-        'format-management',
-        'render_format_management_page'
-    );
-}
-add_action('admin_menu', 'add_format_management_page');
-
-// Gestion des champs FORMATS des Custom Post Types
-function render_format_management_page() {
-    ?>
-    <div class="wrap">
-        <h1><?php _e('Gestion des Formats', 'nathalie-mota'); ?></h1>
-        <form method="post" action="">
-            <?php wp_nonce_field('delete_formats_nonce', 'delete_formats_nonce_field'); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row"><?php _e('Supprimer un format', 'nathalie-mota'); ?></th>
-                    <td>
-                        <select name="format_id">
-                            <?php
-                            $formats = get_terms(array('taxonomy' => 'format', 'hide_empty' => false));
-                            foreach ($formats as $format) {
-                                echo '<option value="' . esc_attr($format->term_id) . '">' . esc_html($format->name) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <?php submit_button(__('Supprimer', 'nathalie-mota')); ?>
-        </form>
-        <?php
-        if (isset($_POST['delete_formats_nonce_field']) && wp_verify_nonce($_POST['delete_formats_nonce_field'], 'delete_formats_nonce')) {
-            $format_id = intval($_POST['format_id']);
-            wp_delete_term($format_id, 'format');
-            echo '<div class="updated"><p>' . __('Format supprimé.', 'nathalie-mota') . '</p></div>';
-        }
-        ?>
-    </div>
-    <?php
-}
 
 // Supprimer la catégorie "Uncategorized" et exclure la catégorie "General" des sélecteurs personnalisés
 function remove_uncategorized_category() {
@@ -367,7 +150,7 @@ function exclude_uncategorized_and_general_term($terms, $taxonomies, $args) {
 }
 add_filter('get_terms', 'exclude_uncategorized_and_general_term', 10, 3);
 
-// Permettre la suppression des termes de taxonomie dans les Custom Post Types
+// 9. Activer la suppression des termes de taxonomie dans les Custom Post Types
 function allow_term_deletion() {
     global $wp_taxonomies;
     foreach ($wp_taxonomies as $taxonomy => $object) {
@@ -378,81 +161,6 @@ function allow_term_deletion() {
 }
 add_action('init', 'allow_term_deletion');
 
-// Page d'options pour gérer les termes personnalisés
-function add_taxonomy_management_page() {
-    add_menu_page(
-        __('Gestion des Catégories', 'nathalie-mota'),
-        __('Gestion des Catégories', 'nathalie-mota'),
-        'manage_options',
-        'taxonomy-management',
-        'render_taxonomy_management_page'
-    );
-}
-add_action('admin_menu', 'add_taxonomy_management_page');
-
-// Affiche la page de gestion des catégories dans le panneau d'administration
-function render_taxonomy_management_page() {
-    ?>
-    <div class="wrap">
-        <h1><?php _e('Gestion des Catégories', 'nathalie-mota'); ?></h1>
-        <form method="post" action="">
-            <?php wp_nonce_field('delete_terms_nonce', 'delete_terms_nonce_field'); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row"><?php _e('Supprimer un terme de catégorie', 'nathalie-mota'); ?></th>
-                    <td>
-                        <select name="term_id">
-                            <?php
-                            $terms = get_terms(array('taxonomy' => 'category', 'hide_empty' => false));
-                            foreach ($terms as $term) {
-                                if ($term->slug != 'uncategorized' && $term->slug != 'general') {
-                                    echo '<option value="' . esc_attr($term->term_id) . '">' . esc_html($term->name) . '</option>';
-                                }
-                            }
-                            ?>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <?php submit_button(__('Supprimer', 'nathalie-mota')); ?>
-        </form>
-        <?php
-        if (isset($_POST['delete_terms_nonce_field']) && wp_verify_nonce($_POST['delete_terms_nonce_field'], 'delete_terms_nonce')) {
-            $term_id = intval($_POST['term_id']);
-            wp_delete_term($term_id, 'category');
-            echo '<div class="updated"><p>' . __('Terme supprimé.', 'nathalie-mota') . '</p></div>';
-        }
-        ?>
-    </div>
-    <?php
-}
-
-// Customizer pour ajouter une image dans la section hero
-function nathalie_mota_customizer_register($wp_customize) {
-    // Ajouter une section pour la photo du hero
-    $wp_customize->add_section('hero_section', array(
-        'title'    => __('Image de couverture', 'nathalie-mota'), // Traduction du titre
-        'priority' => 30,
-    ));
-
-    // Ajouter un paramètre pour l'image
-    $wp_customize->add_setting('hero_image', array(
-        'default'   => '',
-        'transport' => 'refresh',
-    ));
-
-    // Ajouter un contrôle pour l'image
-    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'hero_image', array(
-        'label'    => __('Télécharger l\'image de couverture', 'nathalie-mota'), // Traduction du label
-        'section'  => 'hero_section',
-        'settings' => 'hero_image',
-    )));
-}
-
-add_action('customize_register', 'nathalie_mota_customizer_register');
-
-
-// Récupérer les articles précédents et suivants en fonction de la date de prise de vue
 function get_all_photos_sorted_by_date() {
     global $wpdb;
 
@@ -553,31 +261,4 @@ function submit_contact_form() {
 add_action('wp_ajax_submit_contact_form', 'submit_contact_form');
 add_action('wp_ajax_nopriv_submit_contact_form', 'submit_contact_form');
 
-// Permettre le téléchargement de fichiers SVG
-function add_svg_to_upload_mimes($mimes) {
-    $mimes['svg'] = 'image/svg+xml';
-    return $mimes;
-}
-add_filter('upload_mimes', 'add_svg_to_upload_mimes');
-
-// Rendre le troisième élément de menu non cliquable
-function make_third_menu_item_non_clickable($items, $args) {
-    if ($args->theme_location == 'footer-menu') {
-        $count = 0; // Initialiser le compteur d'éléments de menu
-
-        foreach ($items as $item) {
-            $count++;
-
-            // Cibler le troisième élément
-            if ($count === 3) {
-                // Retirer le lien et ajouter une classe spécifique
-                $item->url = '#'; 
-                $item->classes[] = 'non-clickable';
-            }
-        }
-    }
-
-    return $items;
-}
-add_filter('wp_nav_menu_objects', 'make_third_menu_item_non_clickable', 10, 2);
 ?>
