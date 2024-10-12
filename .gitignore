@@ -27,5 +27,6 @@ wp-content/uploads/*.wpress
 # Ignore backup files
 app/public/wp-content/ai1wm-backups/
 
-app/public/.user.ini
+# Autres
+app/.user.ini
 app/public/.htaccess
