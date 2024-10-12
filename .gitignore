@@ -26,3 +26,6 @@ wp-content/uploads/*.wpress
 !wp-content/uploads/
 # Ignore backup files
 app/public/wp-content/ai1wm-backups/
+
+app/public/.user.ini
+app/public/.htaccess
