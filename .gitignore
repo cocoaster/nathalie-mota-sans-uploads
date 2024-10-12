@@ -11,6 +11,7 @@ app/public/wp-config.php
 *.zip
 *.wpress
 *.log
+*.htaccess
 
 # Ignorer certains fichiers dans wp-content
 wp-content/ai1wm-backups/
