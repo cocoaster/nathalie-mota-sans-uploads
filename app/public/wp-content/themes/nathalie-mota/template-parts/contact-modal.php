@@ -1,7 +1,4 @@
 <div id="contact-modal" class="contact-modal">
-   
-        
-    
     <div class="contact-modal-content">
         <span class="close">&times;</span>
         <form id="contact-form">
