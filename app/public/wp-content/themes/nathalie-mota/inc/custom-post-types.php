@@ -35,7 +35,6 @@ function nathalie_mota_custom_post_types() {
 }
 add_action('init', 'nathalie_mota_custom_post_types');
 
-// Désactiver Gutenberg pour le Custom Post Type "photo"
 // Désactiver Gutenberg pour le Custom Post Type 'photo'
 function nathalie_mota_disable_gutenberg($current_status, $post_type) {
     if ($post_type === 'photo') return false;
