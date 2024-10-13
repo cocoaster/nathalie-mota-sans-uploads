@@ -8,13 +8,10 @@
 
 // 1. Initialisation du thème : ajout des supports de base
 function nathalie_mota_setup() {
-    // Ajoute le support pour le titre dynamique dans l'onglet du navigateur
-    add_theme_support('title-tag');
+    add_theme_support('title-tag'); // Support pour le titre dynamique
+    add_theme_support('post-thumbnails'); // Support pour les images mises en avant
 
-    // Ajoute le support pour les images mises en avant dans les publications
-    add_theme_support('post-thumbnails');
-
-    // Enregistre les menus de navigation
+    // Enregistrement des menus de navigation
     register_nav_menus(array(
         'main-menu' => __('Main Menu', 'nathalie-mota'),
         'footer-menu' => __('Footer Menu', 'nathalie-mota')
@@ -24,7 +21,7 @@ add_action('after_setup_theme', 'nathalie_mota_setup');
 
 // 2. Enregistrement des scripts et styles CSS/JS
 function nathalie_mota_enqueue_scripts() {
-    // Liste des styles CSS à charger
+    // Styles CSS à charger
     $styles = [
         'normalize-css' => '/assets/css/normalize.css',
         'main-css' => '/assets/css/styles.css',
@@ -42,15 +39,12 @@ function nathalie_mota_enqueue_scripts() {
     ];
 
     foreach ($styles as $handle => $src) {
-        // // Vérifie si l'URL du style commence par 'http'
         $url = strpos($src, 'http') === 0 ? $src : get_template_directory_uri() . $src;
-        // Charge le style en utilisant le nom d'identifiant unique et l'URL calculée
         wp_enqueue_style($handle, $url);
     }
 
-    // Charge jQuery par défaut pour les scripts du thème
-    wp_enqueue_script('jquery'); // Script jQuery de WordPress
-    // Liste des scripts JavaScript à charger
+    // Scripts JavaScript à charger
+    wp_enqueue_script('jquery'); // jQuery de WordPress
     $scripts = [
         'custom-js' => '/assets/js/custom.js',
         'header-js' => '/assets/js/header.js',
@@ -58,76 +52,57 @@ function nathalie_mota_enqueue_scripts() {
         'lightbox-js' => '/assets/js/lightbox.js',
         'filters-js' => '/assets/js/filters.js',
         'single-photo-js' => '/assets/js/single-photo.js',
-        
     ];
-    // Boucle pour enregistrer et charger chaque fichier JavaScript défini dans le tableau $scripts
+
     foreach ($scripts as $handle => $src) {
         wp_enqueue_script($handle, get_template_directory_uri() . $src, array('jquery'), null, true);
     }
 
-    // Localiser le script 'load-more-js' pour passer l'URL AJAX et le nonce
-    wp_localize_script('load-more-js', 'nathalie_mota_ajax', array(
+    // Localiser le script AJAX pour le nonce
+    wp_localize_script('contact-js', 'nathalie_mota_ajax', array(
         'url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('nathalie_mota_nonce') // Créez un nonce unique pour AJAX
+        'nonce' => wp_create_nonce('submit_contact_form_nonce') // Création du nonce pour la soumission du formulaire de contact
     ));
 }
 add_action('wp_enqueue_scripts', 'nathalie_mota_enqueue_scripts');
 
-
- foreach ($styles as $handle => $src) {
-        // // Vérifie si l'URL du style commence par 'http'
-        $url = strpos($src, 'http') === 0 ? $src : get_template_directory_uri() . $src;
-        // Charge le style en utilisant le nom d'identifiant unique et l'URL calculée
-        wp_enqueue_style($handle, $url);
-    }
-
-
-
 // 3. Inclusion des fichiers additionnels
 require_once get_template_directory() . '/inc/custom-post-types.php';  // Gestion des Custom Post Types
 require_once get_template_directory() . '/inc/ajax-handlers.php';      // Gestion des requêtes AJAX
-require_once get_template_directory() . '/inc/hero-customizer.php';        // Personnalisation de la section Hero
+require_once get_template_directory() . '/inc/hero-customizer.php';    // Personnalisation de la section Hero
 
+// 4. Fonction pour afficher les photos dans une boucle (à placer dans `inc/ajax-handlers.php` si utilisé dans AJAX)
 function render_photo_html($photos) {
     while ($photos->have_posts()) : $photos->the_post();
         get_template_part('template-parts/photo-item');
-        
     endwhile;
     wp_reset_postdata();
 }
 
-// 4. Fonction pour permettre l'upload de fichiers SVG
+// 5. Autoriser l'upload de fichiers SVG
 function add_svg_to_upload_mimes($mimes) {
     $mimes['svg'] = 'image/svg+xml';
     return $mimes;
 }
 add_filter('upload_mimes', 'add_svg_to_upload_mimes');
 
-// 5. Rendre le troisième élément de menu non cliquable
+// 6. Rendre le troisième élément de menu non cliquable
 function make_third_menu_item_non_clickable($items, $args) {
     if ($args->theme_location == 'footer-menu') {
-
-        $count = 0; // Initialiser le compteur d'éléments de menu
-
+        $count = 0;
         foreach ($items as $item) {
             $count++;
-
-            // Cibler le troisième élément
             if ($count === 3) {
-                // Retirer le lien et ajouter une classe spécifique
-                $item->url = '#'; 
+                $item->url = '#';
                 $item->classes[] = 'non-clickable';
             }
         }
     }
-
     return $items;
 }
 add_filter('wp_nav_menu_objects', 'make_third_menu_item_non_clickable', 10, 2);
 
-
-
-// 9. Récupération des photos triées par date de prise de vue
+// 7. Récupération des photos triées par date de prise de vue
 function get_all_photos_sorted_by_date() {
     global $wpdb;
 
@@ -143,16 +118,12 @@ function get_all_photos_sorted_by_date() {
     return $wpdb->get_results($query);
 }
 
-// 10. Récupérer l'index de la photo actuelle dans un ensemble de photos triées
+// 8. Récupérer l'index de la photo actuelle dans un ensemble de photos triées
 function get_current_photo_index($current_post_id, $photos) {
     foreach ($photos as $index => $photo) {
         if ($photo->ID == $current_post_id) {
             return $index;
         }
     }
-    return -1; // Indice non trouvé
+    return -1;
 }
-
-
-
-?>

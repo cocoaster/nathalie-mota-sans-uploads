@@ -4,12 +4,6 @@
 /**
  * Enregistrement des scripts AJAX pour les filtres et la pagination
  */
-function nathalie_mota_ajax_scripts() {
-    wp_localize_script('custom-js', 'nathalie_mota_ajax', array(
-        'url' => admin_url('admin-ajax.php')
-    ));
-}
-add_action('wp_enqueue_scripts', 'nathalie_mota_ajax_scripts');
 
 /**
  * Fonction AJAX pour filtrer les photos
@@ -132,7 +126,7 @@ add_action('wp_ajax_nopriv_load_more_photos', 'load_more_photos');
  * Gestion de l'envoi du formulaire de contact via AJAX
  */
 function submit_contact_form() {
-    // Vérification du nonce pour des raisons de sécurité
+    // Vérification du nonce pour sécuriser la requête
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'submit_contact_form_nonce')) {
         error_log('Nonce verification failed.');
         wp_send_json_error(array('message' => 'Nonce verification failed.'));
@@ -145,7 +139,7 @@ function submit_contact_form() {
     $photo_reference = isset($_POST['photo_reference']) ? sanitize_text_field($_POST['photo_reference']) : '';
     $message = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
 
-    // Vérification de la présence des champs obligatoires
+    // Validation des données
     if (empty($name) || empty($email) || empty($message)) {
         wp_send_json_error(array('message' => 'Veuillez remplir tous les champs obligatoires.'));
         return;
@@ -170,14 +164,14 @@ function submit_contact_form() {
         }
     }
 
-    // Envoi d'un e-mail à l'administrateur
+    // Envoi d'un email à l'administrateur et confirmation à l'utilisateur
     $to_admin = get_option('admin_email');
     $subject_admin = sprintf(__('Nouveau message de %s', 'nathalie-mota'), $name);
     $body_admin = sprintf(__('Nom: %s\nEmail: %s\nRéférence Photo: %s\nMessage: %s', 'nathalie-mota'), $name, $email, $photo_reference, $message);
     $headers = array('Content-Type: text/plain; charset=UTF-8');
+
     $admin_email_sent = wp_mail($to_admin, $subject_admin, $body_admin, $headers);
 
-    // Envoi d'un e-mail de confirmation à l'utilisateur
     $to_user = $email;
     $subject_user = __('Confirmation de réception de votre message', 'nathalie-mota');
     $body_user = sprintf(
@@ -194,4 +188,5 @@ function submit_contact_form() {
 }
 add_action('wp_ajax_submit_contact_form', 'submit_contact_form');
 add_action('wp_ajax_nopriv_submit_contact_form', 'submit_contact_form');
+
 ?>
